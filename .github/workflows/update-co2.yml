@@ -1,0 +1,55 @@
+# Keeps the home page's CO2 reading current.
+# Every Monday it downloads NOAA's global monthly mean CO2 file and saves it as
+# data/co2_mm_gl.csv. It only saves (commits) when NOAA has published new numbers,
+# then asks GitHub Pages to republish the site.
+name: Update NOAA CO2 data
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"   # Mondays 03:17 UTC (10:17 Jakarta)
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the site files
+        uses: actions/checkout@v4
+
+      - name: Download NOAA global monthly mean CO2
+        run: |
+          mkdir -p data
+          curl -fsSL --retry 3 --retry-delay 20 \
+            https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_gl.csv \
+            -o data/co2_mm_gl.csv.new
+          # Safety checks: keep the old file if the download looks wrong
+          grep -q '^year,month' data/co2_mm_gl.csv.new
+          rows=$(grep -c '^[0-9]\{4\},' data/co2_mm_gl.csv.new)
+          echo "Rows downloaded: $rows"
+          [ "$rows" -gt 500 ]
+          mv data/co2_mm_gl.csv.new data/co2_mm_gl.csv
+
+      - name: Save if NOAA published new numbers
+        id: save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/co2_mm_gl.csv
+          if git diff --cached --quiet; then
+            echo "No change since last run."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Update NOAA global CO2 data"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Republish the site
+        if: steps.save.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages will pick the change up on its own."
