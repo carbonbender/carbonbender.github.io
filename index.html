@@ -315,7 +315,7 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 .bend-axis { fill: none; stroke: var(--rule); stroke-width: 1.2; }
 .bend-unit { fill: var(--ink-2); font-family: var(--f-note); font-size: 15px; }
 .bend .note { grid-column: 10 / span 3; border-left: 1px solid var(--rule); padding-left: 16px; margin-bottom: 18px; }
-.bend .standfirst { grid-column: 1 / span 7; font-family: var(--f-display); font-size: var(--s1); line-height: 1.5; max-width: 34em; }
+.bend .standfirst { grid-column: 1 / span 7; align-self: start; font-family: var(--f-display); font-size: var(--s1); line-height: 1.5; max-width: 34em; }
 @media (prefers-reduced-motion: no-preference) {
   .bend-curve { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s ease-out 0.2s forwards; }
 }
@@ -415,6 +415,21 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
   .posts li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .posts time, .posts .topic { padding-top: 0; }
 }
+
+/* Home: NOAA global CO2 reading in the right margin */
+.co2 { grid-column: 10 / span 3; border-left: 1px solid var(--rule); padding-left: 16px; display: flex; flex-direction: column; gap: 4px; align-self: start; }
+.co2 .co2-h { font-family: var(--f-note); font-size: 0.88rem; color: var(--ink-2); line-height: 1.35; }
+.co2 .co2-v { font-family: var(--f-display); font-weight: 300; font-size: 2.3rem; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--ink); }
+.co2 .co2-v .u { font-family: var(--f-note); font-size: 0.95rem; font-weight: 400; color: var(--ink-2); margin-left: 2px; }
+.co2 .co2-d { font-family: var(--f-note); font-size: 0.88rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.co2 .co2-d b { color: var(--ochre); font-weight: 500; }
+.co2 svg { display: block; width: 100%; max-width: 260px; height: auto; margin-top: 6px; overflow: visible; }
+.co2 .sp-line { fill: none; stroke: var(--blue); stroke-width: 1.4; stroke-linejoin: round; }
+.co2 .sp-dot { fill: var(--blue); }
+.co2 .sp-axis { stroke: var(--rule); stroke-width: 1; }
+.co2 .sp-lbl { fill: var(--ink-2); font-family: var(--f-note); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.co2 .co2-src { font-family: var(--f-note); font-size: 0.78rem; line-height: 1.4; color: var(--ink-2); margin-top: 4px; }
+@media (max-width: 900px) { .co2 { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -448,6 +463,13 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
       <b>By Try Abednego</b>, a chemical engineer in Jakarta working on industrial decarbonisation. <a href="about.html">About the author</a>
     </p>
     <p class="standfirst">Analysis and opinion on bending the emissions curve of heavy industry in Indonesia and Asia-Pacific: the oil and gas value chain, carbon capture and storage, and carbon markets.</p>
+    <aside class="co2" aria-labelledby="co2-h">
+      <p class="co2-h" id="co2-h">Atmospheric CO₂, global monthly mean</p>
+      <p class="co2-v"><span id="co2-val">426.10</span><span class="u">ppm</span></p>
+      <p class="co2-d"><span id="co2-month">July 2026</span>, <b id="co2-delta">+2.01 ppm</b> on a year earlier</p>
+      <svg id="co2-spark" viewBox="0 0 240 74" role="img" aria-label="Global monthly mean CO₂ since 1979, rising steadily" hidden></svg>
+      <p class="co2-src">Source: NOAA Global Monitoring Laboratory, Lan, Tans and Thoning, <a href="https://doi.org/10.15138/9N0H-ZH07" rel="noopener">doi:10.15138/9N0H-ZH07</a>. Latest year is preliminary. Updated monthly.</p>
+    </aside>
   </section>
 
   <section class="section grid" id="latest" aria-labelledby="latest-h">
@@ -540,6 +562,40 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
   }
   fitBend();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBend);
+  // NOAA global CO2: read the monthly CSV saved by the update job, show the latest value and draw the curve since 1980.
+  (function () {
+    var box = document.getElementById('co2-val'); if (!box || !window.fetch) return;
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    fetch('data/co2_mm_gl.csv', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (txt) {
+      var rows = txt.split(/\r?\n/).filter(function (l) { return /^\d{4},/.test(l); }).map(function (l) {
+        var c = l.split(','); return { y: +c[0], m: +c[1], v: +c[3] };
+      }).filter(function (d) { return d.v > 0; });
+      if (rows.length < 24) return;
+      var last = rows[rows.length - 1];
+      var prev = rows.filter(function (d) { return d.y === last.y - 1 && d.m === last.m; })[0];
+      box.textContent = last.v.toFixed(2);
+      document.getElementById('co2-month').textContent = MONTHS[last.m - 1] + ' ' + last.y;
+      var dEl = document.getElementById('co2-delta');
+      if (prev) { var d = last.v - prev.v; dEl.textContent = (d >= 0 ? '+' : '−') + Math.abs(d).toFixed(2) + ' ppm'; }
+      // sparkline, drawn to scale
+      var W = 240, H = 74, L = 4, R = 236, T = 14, B = 58;
+      var x0 = rows[0].y + (rows[0].m - 1) / 12, x1 = last.y + (last.m - 1) / 12;
+      var vmin = Infinity, vmax = -Infinity; rows.forEach(function (d) { vmin = Math.min(vmin, d.v); vmax = Math.max(vmax, d.v); });
+      var X = function (d) { return L + (d.y + (d.m - 1) / 12 - x0) / (x1 - x0) * (R - L); };
+      var Y = function (v) { return B - (v - vmin) / (vmax - vmin) * (B - T); };
+      var pts = rows.map(function (d) { return X(d).toFixed(1) + ',' + Y(d.v).toFixed(1); }).join(' ');
+      var svg = document.getElementById('co2-spark');
+      svg.innerHTML =
+        '<line class="sp-axis" x1="' + L + '" y1="' + (B + 3) + '" x2="' + R + '" y2="' + (B + 3) + '"/>' +
+        '<polyline class="sp-line" points="' + pts + '"/>' +
+        '<circle class="sp-dot" cx="' + X(last).toFixed(1) + '" cy="' + Y(last.v).toFixed(1) + '" r="2.4"/>' +
+        '<text class="sp-lbl" x="' + L + '" y="' + (Y(rows[0].v) - 6).toFixed(1) + '">' + rows[0].v.toFixed(0) + '</text>' +
+        '<text class="sp-lbl" x="' + R + '" y="' + (T - 5) + '" text-anchor="end">' + last.v.toFixed(0) + ' ppm</text>' +
+        '<text class="sp-lbl" x="' + L + '" y="' + H + '">' + rows[0].y + '</text>' +
+        '<text class="sp-lbl" x="' + R + '" y="' + H + '" text-anchor="end">' + last.y + '</text>';
+      svg.hidden = false;
+    }).catch(function () { /* keep the values written into the page */ });
+  })();
   // Links still marked ADD-LINK-HERE show as plain text with a small "link to follow" note.
   document.querySelectorAll('a[href*="ADD-LINK"]').forEach(function (a) {
     a.classList.add('pending'); a.setAttribute('aria-disabled', 'true'); a.removeAttribute('href');
