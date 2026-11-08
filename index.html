@@ -304,8 +304,9 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 .masthead nav a[aria-current="page"] { border-bottom-color: var(--ink); }
 
 /* Home: the wordmark rides a bent emissions curve, with the business-as-usual line it bends away from */
-.bend { padding-block: 40px 8px; row-gap: 20px; align-items: end; }
-.bend .mark { grid-column: 1 / span 9; }
+.bend { padding-block: 40px 8px; row-gap: 20px; align-items: start; }
+.bend-main { grid-column: 1 / span 9; display: flex; flex-direction: column; gap: 22px; }
+.bend-side { grid-column: 10 / span 3; display: flex; flex-direction: column; gap: 22px; border-left: 1px solid var(--rule); padding-left: 16px; margin-top: 30px; }
 .bend .mark svg { display: block; width: 100%; height: auto; overflow: visible; }
 .bend .mark h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .bend-word { fill: var(--ink); font-family: var(--f-display); font-weight: 300; font-size: 104px; letter-spacing: -1px; }
@@ -314,8 +315,7 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 .bend-lbl { fill: var(--ochre); font-family: var(--f-display); font-style: italic; font-size: 19px; }
 .bend-axis { fill: none; stroke: var(--rule); stroke-width: 1.2; }
 .bend-unit { fill: var(--ink-2); font-family: var(--f-note); font-size: 15px; }
-.bend .note { grid-column: 10 / span 3; border-left: 1px solid var(--rule); padding-left: 16px; margin-bottom: 18px; }
-.bend .standfirst { grid-column: 1 / span 7; align-self: start; font-family: var(--f-display); font-size: var(--s1); line-height: 1.5; max-width: 34em; }
+.bend .standfirst { font-family: var(--f-display); font-size: var(--s1); line-height: 1.5; max-width: 34em; }
 @media (prefers-reduced-motion: no-preference) {
   .bend-curve { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s ease-out 0.2s forwards; }
 }
@@ -408,8 +408,8 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 .colophon .brand { font-family: var(--f-display); font-style: italic; color: var(--ink); font-size: 1rem; }
 
 @media (max-width: 900px) {
-  .bend .mark, .bend .note, .bend .standfirst { grid-column: 1 / -1; }
-  .bend .note { margin-bottom: 0; }
+  .bend-main, .bend-side { grid-column: 1 / -1; }
+  .bend-side { margin-top: 0; }
 }
 @media (max-width: 600px) {
   .posts li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
@@ -417,7 +417,7 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 }
 
 /* Home: NOAA global CO2 reading in the right margin */
-.co2 { grid-column: 10 / span 3; border-left: 1px solid var(--rule); padding-left: 16px; display: flex; flex-direction: column; gap: 4px; align-self: start; }
+.co2 { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--rule); padding-top: 18px; }
 .co2 .co2-h { font-family: var(--f-note); font-size: 0.88rem; color: var(--ink-2); line-height: 1.35; }
 .co2 .co2-v { font-family: var(--f-display); font-weight: 300; font-size: 2.3rem; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--ink); }
 .co2 .co2-v .u { font-family: var(--f-note); font-size: 0.95rem; font-weight: 400; color: var(--ink-2); margin-left: 2px; }
@@ -429,7 +429,6 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
 .co2 .sp-axis { stroke: var(--rule); stroke-width: 1; }
 .co2 .sp-lbl { fill: var(--ink-2); font-family: var(--f-note); font-size: 10.5px; font-variant-numeric: tabular-nums; }
 .co2 .co2-src { font-family: var(--f-note); font-size: 0.78rem; line-height: 1.4; color: var(--ink-2); margin-top: 4px; }
-@media (max-width: 900px) { .co2 { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -447,29 +446,33 @@ footer.colophon p { grid-column: span 6; font-family: var(--f-note); font-size: 
   </header>
 
   <section class="bend grid" aria-label="Carbon Bender">
-    <div class="mark">
-      <h1>Carbon Bender</h1>
-      <svg viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path class="bend-axis" d="M24,26 V252 H884"/>
-        <text class="bend-unit" x="34" y="38">tCO₂e</text>
-        <text class="bend-word" id="cb-carbon" x="44" y="140">Carbon</text>
-        <text class="bend-word" id="cb-bender" x="402" y="140">Bender</text>
-        <path class="bend-bau" id="cb-bau" d="M385,172 L884,147"/>
-        <path class="bend-curve" id="cb-curve" pathLength="1" d="M24,190 L385,172 C520,165 680,205 884,246"/>
-        <text class="bend-lbl" x="884" y="176" text-anchor="end">business as usual</text>
-      </svg>
+    <div class="bend-main">
+      <div class="mark">
+        <h1>Carbon Bender</h1>
+        <svg viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path class="bend-axis" d="M24,26 V252 H884"/>
+          <text class="bend-unit" x="34" y="38">tCO₂e</text>
+          <text class="bend-word" id="cb-carbon" x="44" y="140">Carbon</text>
+          <text class="bend-word" id="cb-bender" x="402" y="140">Bender</text>
+          <path class="bend-bau" id="cb-bau" d="M385,172 L884,147"/>
+          <path class="bend-curve" id="cb-curve" pathLength="1" d="M24,190 L385,172 C520,165 680,205 884,246"/>
+          <text class="bend-lbl" x="884" y="176" text-anchor="end">business as usual</text>
+        </svg>
+      </div>
+      <p class="standfirst">Analysis and opinion on bending the emissions curve of heavy industry in Indonesia and Asia-Pacific: the oil and gas value chain, carbon capture and storage, and carbon markets.</p>
     </div>
-    <p class="note">
-      <b>By Try Abednego</b>, a chemical engineer in Jakarta working on industrial decarbonisation. <a href="about.html">About the author</a>
-    </p>
-    <p class="standfirst">Analysis and opinion on bending the emissions curve of heavy industry in Indonesia and Asia-Pacific: the oil and gas value chain, carbon capture and storage, and carbon markets.</p>
-    <aside class="co2" aria-labelledby="co2-h">
-      <p class="co2-h" id="co2-h">Atmospheric CO₂, global monthly mean</p>
-      <p class="co2-v"><span id="co2-val">426.10</span><span class="u">ppm</span></p>
-      <p class="co2-d"><span id="co2-month">July 2026</span>, <b id="co2-delta">+2.01 ppm</b> on a year earlier</p>
-      <svg id="co2-spark" viewBox="0 0 240 74" role="img" aria-label="Global monthly mean CO₂ since 1979, rising steadily" hidden></svg>
-      <p class="co2-src">Source: NOAA Global Monitoring Laboratory, Lan, Tans and Thoning, <a href="https://doi.org/10.15138/9N0H-ZH07" rel="noopener">doi:10.15138/9N0H-ZH07</a>. Latest year is preliminary. Updated monthly.</p>
-    </aside>
+    <div class="bend-side">
+      <p class="note">
+        <b>By Try Abednego</b>, a chemical engineer in Jakarta working on industrial decarbonisation. <a href="about.html">About the author</a>
+      </p>
+      <aside class="co2" aria-labelledby="co2-h">
+        <p class="co2-h" id="co2-h">Atmospheric CO₂, global monthly mean</p>
+        <p class="co2-v"><span id="co2-val">426.10</span><span class="u">ppm</span></p>
+        <p class="co2-d"><span id="co2-month">July 2026</span>, <b id="co2-delta">+2.01 ppm</b> on a year earlier</p>
+        <svg id="co2-spark" viewBox="0 0 240 74" role="img" aria-label="Global monthly mean CO₂ since 1979, rising steadily" hidden></svg>
+        <p class="co2-src">Source: NOAA Global Monitoring Laboratory, Lan, Tans and Thoning, <a href="https://doi.org/10.15138/9N0H-ZH07" rel="noopener">doi:10.15138/9N0H-ZH07</a>. Latest year is preliminary. Updated monthly.</p>
+      </aside>
+    </div>
   </section>
 
   <section class="section grid" id="latest" aria-labelledby="latest-h">
